@@ -1326,7 +1326,7 @@ typedef enum
     SDL_GPU_QUERY_TIMESTAMP,
     SDL_GPU_QUERY_OCCLUSION,
     SDL_GPU_QUERY_BINARY_OCCLUSION
-} SDL_GPU_QueryType;
+} SDL_GPUQueryType;
 
 /* Structures */
 
@@ -1746,6 +1746,21 @@ typedef struct SDL_GPUTransferBufferCreateInfo
 
     SDL_PropertiesID props;            /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
 } SDL_GPUTransferBufferCreateInfo;
+
+/**
+ * A structure specifying the parameters of a query pool.
+ *
+ * \since This struct is available since SDL 3.2.x.
+ *
+ * \sa SDL_CreateGPUQueryPool
+ */
+typedef struct SDL_GPUQueryPoolCreateInfo
+{
+    SDL_GPUQueryType type;             /**< The type of query to be created. */
+    Uint32 count;                      /**< The number of queries to be created. */
+
+    SDL_PropertiesID props;             /**< A properties ID for extensions. Should be 0 if no extensions are needed. */
+} SDL_GPUQueryPoolCreateInfo;
 
 /* Pipeline state structures */
 
@@ -2617,8 +2632,7 @@ extern SDL_DECLSPEC SDL_GPUTransferBuffer *SDLCALL SDL_CreateGPUTransferBuffer(
  * Queries are then exectured using some query index from the pool.
  *
  * \param device a GPU Context.
- * \param type the type of query to create.
- * \param query_count the number of queries to create.
+ * \param createinfo a struct describing the state of the query pool to create.
  * \returns a query pool object on success, or NULL on failure; call
  *          SDL_GetError() for more information.
  *
@@ -2631,8 +2645,9 @@ extern SDL_DECLSPEC SDL_GPUTransferBuffer *SDLCALL SDL_CreateGPUTransferBuffer(
  */
 extern SDL_DECLSPEC SDL_GPUQueryPool *SDLCALL SDL_CreateGPUQueryPool(
     SDL_GPUDevice *device,
-    SDL_GPU_QueryType type,
-    Uint32 query_count);
+    const SDL_GPUQueryPoolCreateInfo *createinfo);
+
+#define SDL_PROP_GPU_QUERYPOOL_CREATE_NAME_STRING "SDL.gpu.querypool.create.name"
 
 /* Debug Naming */
 
