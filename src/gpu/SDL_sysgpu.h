@@ -483,6 +483,12 @@ struct SDL_GPUDevice
         Uint32 size,
         const char *debugName);
 
+    SDL_GPUQueryPool *(*CreateQueryPool)(
+        SDL_GPURenderer *driverData,
+        SDL_GPUQueryType type,
+        Uint32 count,
+        const char* debugName);
+
     // Debug Naming
 
     void (*SetBufferName)(
@@ -535,6 +541,10 @@ struct SDL_GPUDevice
     void (*ReleaseGraphicsPipeline)(
         SDL_GPURenderer *driverData,
         SDL_GPUGraphicsPipeline *graphicsPipeline);
+
+    void (*ReleaseQueryPool)(
+        SDL_GPURenderer *driverData,
+        SDL_GPUQueryPool *queryPool);
 
     // Render Pass
 
@@ -704,6 +714,18 @@ struct SDL_GPUDevice
     void (*EndComputePass)(
         SDL_GPUCommandBuffer *commandBuffer);
 
+    // Queries
+
+    void (*BeginQuery)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUQueryPool *queryPool,
+        Uint32 query);
+
+    void (*EndQuery)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUQueryPool *queryPool,
+        Uint32 query);
+
     // TransferBuffer Data
 
     void *(*MapTransferBuffer)(
@@ -747,6 +769,13 @@ struct SDL_GPUDevice
         const SDL_GPUBufferLocation *destination,
         Uint32 size,
         bool cycle);
+
+    void (*CopyQueryResultsToBuffer)(
+        SDL_GPUCommandBuffer *commandBuffer,
+        SDL_GPUQueryPool *queryPool,
+        Uint32 firstQuery,
+        Uint32 queryCount,
+        const SDL_GPUBufferLocation *destination);
 
     void (*GenerateMipmaps)(
         SDL_GPUCommandBuffer *commandBuffer,
@@ -863,6 +892,9 @@ struct SDL_GPUDevice
         SDL_GPUTextureFormat format,
         SDL_GPUSampleCount desiredSampleCount);
 
+    Uint64 (*GetTimestampFrequency)(
+        SDL_GPURenderer *driverData);
+
     // Opaque pointer for the Driver
     SDL_GPURenderer *driverData;
 
@@ -887,6 +919,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(CreateTexture, name)                 \
     ASSIGN_DRIVER_FUNC(CreateBuffer, name)                  \
     ASSIGN_DRIVER_FUNC(CreateTransferBuffer, name)          \
+    ASSIGN_DRIVER_FUNC(CreateQueryPool, name)               \
     ASSIGN_DRIVER_FUNC(SetBufferName, name)                 \
     ASSIGN_DRIVER_FUNC(SetTextureName, name)                \
     ASSIGN_DRIVER_FUNC(InsertDebugLabel, name)              \
@@ -899,6 +932,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(ReleaseShader, name)                 \
     ASSIGN_DRIVER_FUNC(ReleaseComputePipeline, name)        \
     ASSIGN_DRIVER_FUNC(ReleaseGraphicsPipeline, name)       \
+    ASSIGN_DRIVER_FUNC(ReleaseQueryPool, name)              \
     ASSIGN_DRIVER_FUNC(BeginRenderPass, name)               \
     ASSIGN_DRIVER_FUNC(BindGraphicsPipeline, name)          \
     ASSIGN_DRIVER_FUNC(SetViewport, name)                   \
@@ -929,6 +963,8 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(DispatchCompute, name)               \
     ASSIGN_DRIVER_FUNC(DispatchComputeIndirect, name)       \
     ASSIGN_DRIVER_FUNC(EndComputePass, name)                \
+    ASSIGN_DRIVER_FUNC(BeginQuery, name)                    \
+    ASSIGN_DRIVER_FUNC(EndQuery, name)                      \
     ASSIGN_DRIVER_FUNC(MapTransferBuffer, name)             \
     ASSIGN_DRIVER_FUNC(UnmapTransferBuffer, name)           \
     ASSIGN_DRIVER_FUNC(BeginCopyPass, name)                 \
@@ -938,6 +974,7 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(DownloadFromBuffer, name)            \
     ASSIGN_DRIVER_FUNC(CopyTextureToTexture, name)          \
     ASSIGN_DRIVER_FUNC(CopyBufferToBuffer, name)            \
+    ASSIGN_DRIVER_FUNC(CopyQueryResultsToBuffer, name)      \
     ASSIGN_DRIVER_FUNC(GenerateMipmaps, name)               \
     ASSIGN_DRIVER_FUNC(EndCopyPass, name)                   \
     ASSIGN_DRIVER_FUNC(Blit, name)                          \
@@ -960,7 +997,8 @@ struct SDL_GPUDevice
     ASSIGN_DRIVER_FUNC(QueryFence, name)                    \
     ASSIGN_DRIVER_FUNC(ReleaseFence, name)                  \
     ASSIGN_DRIVER_FUNC(SupportsTextureFormat, name)         \
-    ASSIGN_DRIVER_FUNC(SupportsSampleCount, name)
+    ASSIGN_DRIVER_FUNC(SupportsSampleCount, name)           \
+    ASSIGN_DRIVER_FUNC(GetTimestampFrequency, name)
 
 typedef struct SDL_GPUBootstrap
 {
